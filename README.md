@@ -79,5 +79,6 @@ docs/decisions.md      프로젝트별 결정 기록
 ## 더 보기
 
 - [docs/bootstrap/SETUP.md](docs/bootstrap/SETUP.md) — 최초 설정, 무료 한도
-- [docs/bootstrap/MAINTAINING.md](docs/bootstrap/MAINTAINING.md) — 템플릿 고치는 법, claude-devflow 와의 차이
+- [docs/bootstrap/MAINTAINING.md](docs/bootstrap/MAINTAINING.md) — 템플릿 고치는 법
+- [docs/bootstrap/DESIGN.md](docs/bootstrap/DESIGN.md) — 설계 근거 (클라우드 세션 제약, Neon 선택, 배포 순서)
 - [docs/bootstrap/TROUBLESHOOTING.md](docs/bootstrap/TROUBLESHOOTING.md) — 증상별 해결

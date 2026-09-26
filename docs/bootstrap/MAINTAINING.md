@@ -44,17 +44,7 @@ TEST_DATABASE_URL=postgres://... npm test   # 마이그레이션 러너 실제 D
 
 워크플로를 바꿨으면 `actionlint` 로 확인한다.
 
-## 배경
+## 설계 근거
 
-[claude-devflow](https://github.com/hayohan39/claude-devflow) 의 파이프라인(auto-fix 루프 가드,
-미연결 시 배포 건너뛰기, Neon 선택 근거, Vercel 첫 배포 이슈 등)을 가져와 다음을 바꿨다.
-
-| claude-devflow | project-bootstrap |
-| --- | --- |
-| Slack → PR | Claude 세션(웹/모바일) → PR |
-| Vercel / Neon 선택 | 고정 |
-| ubuntu + windows CI | ubuntu 만 (Claude 클라우드가 주 개발 환경, Actions 분 절약) |
-| 빈 앱 + CLI 스캐폴더(`devflow new`) | Next.js 앱이 든 GitHub 템플릿 + `new-project.yml` |
-| 배포 시 `vercel build --prebuilt` | Vercel 원격 빌드 (Actions 분 절약) |
-| PR 프리뷰 없음 | PR 마다 Neon 브랜치 + Vercel 프리뷰, 여기서 마이그레이션 사전 검증 |
-| DATABASE_URL 하나 | 런타임 pooled / 마이그레이션 direct 분리 |
+왜 이렇게 만들었는지(클라우드 세션 제약, Neon 선택, 배포 순서, auto-fix 토큰 등)는
+[DESIGN.md](DESIGN.md) 에 있다. 구조를 바꾸기 전에 읽는다.
