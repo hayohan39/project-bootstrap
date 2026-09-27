@@ -84,7 +84,14 @@ export async function connectionUris(projectId, branchId) {
     neon(`/projects/${projectId}/connection_uri?${params(false)}`),
     neon(`/projects/${projectId}/connection_uri?${params(true)}`),
   ]);
-  return { direct: direct.uri, pooled: pooled.uri, database: db.name, role: db.owner_name };
+  return { direct: strictSsl(direct.uri), pooled: strictSsl(pooled.uri), database: db.name, role: db.owner_name };
+}
+
+// Neon 이 주는 URI 는 sslmode=require 다. node-postgres 는 이를 verify-full 로 취급하면서
+// 매 연결마다 SECURITY WARNING 을 찍는다(다음 메이저에서 의미가 약해질 예정). Neon 인증서는
+// 공인 인증서라 verify-full 이 그대로 동작하므로 명시해서 경고와 향후 약화를 둘 다 피한다.
+export function strictSsl(uri) {
+  return uri.replace(/([?&])sslmode=require(?=&|$)/, '$1sslmode=verify-full');
 }
 
 async function listBranches(projectId) {
