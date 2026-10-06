@@ -124,6 +124,14 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      # Vercel 봇처럼 시작하자마자 "배포 중" 을 보여 준다. 끝나면 같은 코멘트를 결과로 바꾼다.
+      - name: Comment on the PR (pending)
+        if: steps.guard.outputs.ready == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/preview-comment.mjs pending
+
       - name: Install
         if: steps.guard.outputs.ready == 'true'
         run: npm ci
@@ -148,44 +156,32 @@ jobs:
         run: |
           npm install --global vercel@latest >/dev/null
           # 원격 빌드(Vercel 빌드 머신). DATABASE_URL 은 이 배포에만 주입한다.
+          # 빌드가 실패해도 Inspect 링크(빌드 로그)는 코멘트에 남기기 위해 CLI 출력을 따로 받는다.
+          set +e
           url=$(vercel deploy --yes --token="$VERCEL_TOKEN" \
             --env DATABASE_URL="$DB_POOLED" \
-            --meta githubPr="$PR" --meta githubCommitSha="$SHA")
+            --meta githubPr="$PR" --meta githubCommitSha="$SHA" 2>vercel.log)
+          status=$?
+          set -e
+          cat vercel.log >&2
+          inspect=$(grep -i 'inspect' vercel.log | grep -oE 'https://vercel\.com/[^ ]+' | head -n1 || true)
+          echo "inspect=$inspect" >> "$GITHUB_OUTPUT"
           echo "url=$url" >> "$GITHUB_OUTPUT"
+          [ "$status" -eq 0 ] || exit "$status"
           echo "### 🔎 프리뷰: $url" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment on the PR
         if: always() && steps.guard.outputs.ready == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
           URL: ${{ steps.deploy.outputs.url }}
+          INSPECT: ${{ steps.deploy.outputs.inspect }}
           BRANCH: ${{ steps.branch.outputs.branch_name }}
+          BRANCH_STEP: ${{ steps.branch.outcome }}
           MIGRATE: ${{ steps.migrate.outcome }}
           DEPLOY: ${{ steps.deploy.outcome }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          marker='<!-- preview-comment -->'
-          icon() { case "$1" in success) echo "✅";; skipped) echo "⏭️";; *) echo "❌";; esac; }
-          body=$(cat <<EOF
-          $marker
-          ### 🔎 프리뷰 (\`${SHA:0:7}\`)
-
-          | 단계 | 결과 |
-          | --- | --- |
-          | DB 브랜치 | \`${BRANCH:-생성 실패}\` (프로덕션 복제) |
-          | 마이그레이션 | $(icon "$MIGRATE") $MIGRATE |
-          | 배포 | $(icon "$DEPLOY") ${URL:-$DEPLOY} |
-
-          [실행 로그]($RUN_URL) · PR 을 닫으면 DB 브랜치는 자동으로 지워집니다.
-          EOF
-          )
-          existing=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
-            --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -n1)
-          if [ -n "$existing" ]; then
-            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -f body="$body" >/dev/null
-          else
-            gh pr comment "$PR" --body "$body"
-          fi
+        run: node scripts/preview-comment.mjs result
 
   # ---------------------------------------------------------------------------
   # CI 실패 → Claude 가 로그를 읽고 고쳐서 PR 브랜치에 push.
