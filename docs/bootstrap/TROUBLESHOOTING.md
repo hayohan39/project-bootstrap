@@ -26,6 +26,13 @@ Claude GitHub App 이 "Only select repositories" 로 설치돼 있다 → All re
 `GITHUB_TOKEN` 으로 push 한 커밋은 워크플로를 트리거하지 않는다. Claude GitHub App 을
 설치하거나 `BOT_PAT` 을 넣는다.
 
+**품질 리뷰(🧹)가 안 붙음** — CI 가 실패했거나(그땐 auto-fix 가 돈다), draft, `no-refine` 라벨, `CLAUDE_REFINE=false`,
+또는 HEAD 가 이미 `[claude-refine]` 커밋이다(push 당 1회).
+
+**`[claude-refine]` 커밋 뒤 세션에서 push 가 거절됨** — 브랜치에 CI 가 커밋을 더했다. `git pull origin <브랜치>` 후 다시 push.
+
+**품질 리뷰가 원치 않는 정리를 했다** — 그 커밋을 revert 하고 PR 에 `no-refine` 라벨. 기준을 바꾸려면 `.github/review/quality.md`.
+
 **auto-fix 가 같은 걸 반복**
 3회에서 멈춘다. 반복된다면 원인이 코드가 아니라 설정(시크릿, 한도)일 가능성이 크다.
 그 PR 에서 끄려면 `no-autofix` 라벨.
