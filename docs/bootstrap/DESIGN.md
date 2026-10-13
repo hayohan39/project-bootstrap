@@ -103,10 +103,14 @@ CI 가 통과하면 Claude 가 `.github/review/quality.md` 기준(덧붙임·재
   작성자가 push 할 때마다 한 번. 같은 모델이 취향을 서로 고치며 도는 것을 막는다.
 - 지적에는 "왜 더 나은지" 한 문장을 요구해 취향 지적을 줄인다.
 - `migrations/`, `.github/` 는 네 겹으로 막는다: 프롬프트, 편집 도구(Edit·Write) 차단, pre-push 훅,
-  사후 검사(`[claude-refine]` 커밋이 건드렸으면 🧹 코멘트에 경고하고 job 을 실패시킨다).
+  사후 검사(`[claude-refine]` 또는 claude[bot] 커밋이 건드렸으면 🧹 코멘트에 경고하고 job 을 실패시킨다).
+  pre-push 훅은 커밋 제목의 `[claude-refine]` 도 강제한다(빠지면 반복 방지가 안 된다).
+  완전한 차단은 아니다: `npm run check` 가 PR 코드를 실행하는 이상 의도적 우회는 가능하다.
+  마지막 방어선은 그 커밋도 다시 거치는 CI · 리뷰와 사람의 merge 다.
 - push 는 마지막에 한 번. `ci.yml` 의 concurrency 가 push 직후 이 실행을 취소하므로 리포트를 먼저 쓰고,
   리포트 게시는 `always()` 라 취소돼도 올라간다.
-- 워크플로를 바꾸는 PR 에서는 건너뛴다 — claude-code-action 이 기본 브랜치와 다른 워크플로에서는 돌지 않는다.
+- `ci.yml` 을 바꾸는 PR 에서는 건너뛴다 — claude-code-action 은 App 토큰을 받을 때 실행 중인 워크플로가
+  기본 브랜치와 같은지 검사한다(`BOT_PAT` 을 쓰면 검사가 없어 그대로 돈다).
 - 세션에서 PR 을 올리기 전 같은 기준으로 스스로 다듬게 한다(CLAUDE.md). CI 쪽은 안전망.
 
 ## 5. CI 는 ubuntu 만
