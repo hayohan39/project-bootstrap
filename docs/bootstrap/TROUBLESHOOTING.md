@@ -32,7 +32,7 @@ Claude GitHub App 이 "Only select repositories" 로 설치돼 있다 → All re
 
 **`[claude-refine]` 커밋 뒤 세션에서 push 가 거절됨** — 브랜치에 CI 가 커밋을 더했다. `git pull origin <브랜치>` 후 다시 push.
 
-**🧹 코멘트에 "보호된 경로를 바꿨습니다" 경고 · refine job 실패** — 품질 리뷰 커밋이 막힌 경로를 건드렸다. 그 커밋을 revert.
+**🧹 코멘트에 "보호된 경로를 바꿨습니다" 경고** — 품질 리뷰 커밋이 막힌 경로를 건드렸다. 그 커밋을 revert.
 
 **품질 리뷰가 원치 않는 정리를 했다** — 그 커밋을 revert 하고 PR 에 `no-refine` 라벨. 기준을 바꾸려면 `.github/review/quality.md`.
 
