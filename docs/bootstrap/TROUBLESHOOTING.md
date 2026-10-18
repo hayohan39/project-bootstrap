@@ -26,6 +26,9 @@ Claude GitHub App 이 "Only select repositories" 로 설치돼 있다 → All re
 `GITHUB_TOKEN` 으로 push 한 커밋은 워크플로를 트리거하지 않는다. Claude GitHub App 을
 설치하거나 `BOT_PAT` 을 넣는다.
 
+**Claude 커밋 뒤 품질 리뷰가 "결과를 남기지 못했습니다"** — 로그에 `Workflow initiated by non-human actor`.
+`claude[bot]` 이 시작한 실행이다. ci.yml(refine·autofix)의 `allowed_bots: claude` 를 확인한다([DESIGN.md 4번](DESIGN.md#4-auto-fix)).
+
 **품질 리뷰(🧹)가 안 붙음** — CI 가 실패했거나(그땐 auto-fix 가 돈다), draft, `no-refine` 라벨, `CLAUDE_REFINE=false`,
 또는 HEAD 가 이미 `[claude-refine]` 커밋이다(push 당 1회).
 🧹 코멘트에 "`ci.yml` 을 바꿔서 건너뜁니다" 가 있으면 그 PR 이 `ci.yml` 을 고쳤다 — merge 후 다음 PR 부터 돈다.
