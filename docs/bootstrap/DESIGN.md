@@ -87,6 +87,11 @@ project-scoped 라 흔히 밟는다. `provision.mjs` 가 이 경우를 구분해
 
 - `GITHUB_TOKEN` 으로 push 한 커밋은 워크플로를 트리거하지 않는다. auto-fix 의 push 가 CI 를
   다시 돌리려면 Claude GitHub App 토큰(App 설치 시 action 이 자동 사용) 또는 `BOT_PAT` 이 필요하다.
+- 그래서 App 토큰으로 push 한 커밋의 CI 는 `claude[bot]` 이 시작한 실행이 된다. claude-code-action 은 bot 이 시작한 실행을
+  기본으로 거부하므로(`Workflow initiated by non-human actor`) refine·auto-fix 에 `allowed_bots: claude` 를 둔다.
+  빠지면 Claude 커밋 뒤 품질 리뷰가 "결과를 남기지 못했습니다" 가 된다. `@claude` 는 사람의 코멘트로만 시작하므로 두지 않는다.
+- `actions/checkout` v6+ 는 토큰을 includeIf 파일에 둬서 action 이 지우지 못한다(그러면 push 가 GITHUB_TOKEN 으로 나간다).
+  Claude job 들은 체크아웃 직후 "Hand checkout credentials" 스텝이 토큰을 로컬 설정으로 옮긴다(v5 에서는 그대로).
 - 무한 루프 방지: PR 브랜치의 `[claude-autofix]` 커밋 수로 시도 횟수를 센다(기본 3).
 - 프롬프트로 금지: 테스트 삭제/skip, lint 비활성화, main 의 마이그레이션 수정, 확신 없는 push.
 - preview 실패(프로덕션 복제본에서의 마이그레이션 실패)도 auto-fix 대상이다. 이 경우는
