@@ -28,6 +28,7 @@ Claude GitHub App 이 "Only select repositories" 로 설치돼 있다 → All re
 
 **Claude 커밋 뒤 품질 리뷰가 "결과를 남기지 못했습니다"** — 로그에 `Workflow initiated by non-human actor`.
 `claude[bot]` 이 시작한 실행이다. ci.yml(refine·autofix)의 `allowed_bots: claude` 를 확인한다([DESIGN.md 4번](DESIGN.md#4-auto-fix)).
+`BOT_PAT` 을 쓰면 실행 주체가 사람 계정이라 이 증상은 생기지 않는다.
 
 **품질 리뷰(🧹)가 안 붙음** — CI 가 실패했거나(그땐 auto-fix 가 돈다), draft, `no-refine` 라벨, `CLAUDE_REFINE=false`,
 또는 HEAD 가 이미 `[claude-refine]` 커밋이다(push 당 1회).
