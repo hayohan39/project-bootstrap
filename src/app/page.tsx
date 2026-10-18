@@ -1,47 +1,45 @@
-import { checkDatabase } from "@/lib/check-database";
-import { summarize } from "@/lib/health";
-import { project } from "@/lib/project";
+import Link from "next/link";
+import { AdSlot } from "@/components/AdSlot";
+import { PostCard } from "@/components/PostCard";
+import { latestPosts } from "@/lib/posts";
+import { categories, site } from "@/lib/site";
 
-export const dynamic = "force-dynamic";
-
-// 새 프로젝트의 첫 화면. 배포와 DB 연결이 살아 있는지 한눈에 보여준다.
-// 실제 기능을 만들기 시작하면 이 페이지를 통째로 바꾸면 된다.
-export default async function Home() {
-  const health = summarize(await checkDatabase());
-  const db = health.database;
-
+export default function Home() {
   return (
-    <main>
-      <h1>{project.name}</h1>
-      <p className="muted">{project.description}</p>
+    <>
+      <section className="hero">
+        <p className="whisper">(psst… hi)</p>
+        <h1>We&apos;re a local couple in Korea, and we have a few small recommendations.</h1>
+        <p className="lead">{site.description}</p>
+      </section>
 
-      <h2>상태</h2>
-      <ul>
-        <li>
-          환경: <code>{health.environment}</code>
-          {health.commit ? (
-            <>
-              {" "}
-              · 커밋 <code>{health.commit}</code>
-            </>
-          ) : null}
-        </li>
-        <li>
-          데이터베이스:{" "}
-          {db.state === "ok" ? (
-            <span className="ok">
-              연결됨 ({db.latencyMs}ms, 마이그레이션 {db.migrations}개)
-            </span>
-          ) : db.state === "not-configured" ? (
-            <span className="warn">DATABASE_URL 없음</span>
-          ) : (
-            <span className="warn">오류 — {db.message}</span>
-          )}
-        </li>
-      </ul>
-      <p className="muted">
-        <a href="/api/health">/api/health</a>
-      </p>
-    </main>
+      <section aria-labelledby="categories">
+        <h2 id="categories" className="visually-hidden">
+          Categories
+        </h2>
+        <div className="grid">
+          {categories.map((c) => (
+            <Link key={c.slug} href={`/${c.slug}`} className="card category-card">
+              <span className="emoji" aria-hidden="true">
+                {c.emoji}
+              </span>
+              <h3>{c.title}</h3>
+              <p className="muted">{c.blurb}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <AdSlot name="home-middle" />
+
+      <section aria-labelledby="latest">
+        <h2 id="latest">Our latest little notes</h2>
+        <div className="grid">
+          {latestPosts(9).map((post) => (
+            <PostCard key={`${post.category}/${post.slug}`} post={post} showCategory />
+          ))}
+        </div>
+      </section>
+    </>
   );
 }
