@@ -11,7 +11,7 @@
           │
           ▼
    CI (자동) ─ lint · typecheck · test · 빈 DB 마이그레이션 · build
-          │   ├ 통과 → Claude 품질 리뷰: 작은 정리는 직접 커밋, 큰 리팩터링은 제안 (push 당 1회)
+          │   ├ 통과 → Claude 품질 리뷰: 작은 정리는 직접 커밋, 큰 리팩터링은 제안 (PR 당 1회)
           │   └ 실패 → Claude auto-fix → 다시 CI (PR 당 최대 3회)
           ├ preview ─ Neon 브랜치(프로덕션 복제)에 마이그레이션 → Vercel 프리뷰 → PR 코멘트
           └ Claude 자동 리뷰 코멘트
