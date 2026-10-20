@@ -104,6 +104,9 @@ CI 가 통과하면 Claude 가 `.github/review/quality.md` 기준(덧붙임·재
 
 - **동작이 바뀌지 않는 국소적 정리만** 자동 반영한다(`npm run check` 통과 필수, 실패하면 되돌리고 제안으로).
   여러 파일·공개 인터페이스·테스트 추가는 제안 코멘트로만 남기고 사람이 `@claude` 로 지시한다.
+- PR 당 한 번: 🧹 코멘트에 완료 표시(`<!-- quality-review:done -->`)가 있으면 건너뛴다. 품질 리뷰는 push 마다 CI 를 한 번 더
+  돌게 하므로(정리 커밋 → CI 재실행) Actions 사용 시간이 두 배가 된다. 작성자 push 마다 돌리려면 `REFINE_EVERY_PUSH=true`,
+  한 PR 만 다시 돌리려면 그 🧹 코멘트를 지운다.
 - 반복 방지: HEAD 가 이미 `[claude-refine]` 커밋이면 건너뛴다(`REFINE_MAX_ROUNDS`, 기본 1).
   작성자가 push 할 때마다 한 번. 같은 모델이 취향을 서로 고치며 도는 것을 막는다.
 - 지적에는 "왜 더 나은지" 한 문장을 요구해 취향 지적을 줄인다.
@@ -124,6 +127,19 @@ CI 가 통과하면 Claude 가 `.github/review/quality.md` 기준(덧붙임·재
 주 개발 환경이 Claude 클라우드(Linux)이고, 비공개 리포에서 Windows 러너는 사용 시간이 2배로
 계산된다. 로컬 Windows 에서도 돌아가도록 `.gitattributes`(LF 고정), npm scripts 의 POSIX 문법
 금지, `path.join` 규칙은 유지한다.
+
+### Actions 사용 시간 가드레일
+
+새 프로젝트는 기본이 private 이라 계정의 월 Actions 한도를 함께 쓴다. 필요할 때만 돌게:
+
+- **모든 job 에 `timeout-minutes`.** 기본값 360분이면 멈춘 job 하나가 한도를 크게 깎는다. Claude 단계는 step 에도
+  더 짧은 상한을 둬서, 멈춰도 뒤의 리포트·검사 step 은 돈다.
+- **문서만 바뀐 PR**(`scripts/ci-scope.mjs`): `test` job 은 돌되 설치·빌드·테스트를 건너뛰고, preview·refine 도 건너뛴다.
+  `paths-ignore` 를 쓰지 않는 이유: 체크(`test`)가 아예 안 생겨 보호 규칙을 건 리포에서 merge 가 막힌다.
+  판정이 불확실하면 전체를 돈다. 템플릿 리포지토리는 템플릿 테스트가 문서도 보므로 항상 전체를 돈다.
+- **draft PR 은 프리뷰를 건너뛴다.** ready for review 로 바꾸면 CI 가 다시 돈다.
+- **품질 리뷰는 PR 당 한 번**(4-1). auto-fix 는 PR 당 3회(`AUTOFIX_MAX_ATTEMPTS`).
+- Next.js 빌드 캐시(`.next/cache`)를 `actions/cache` 로 남긴다. main push 의 CI 가 PR 들의 출발점 캐시를 만든다.
 
 ## 6. 비공개 무료 리포의 한계
 

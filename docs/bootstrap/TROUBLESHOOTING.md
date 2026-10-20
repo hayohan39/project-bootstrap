@@ -31,7 +31,10 @@ Claude GitHub App 이 "Only select repositories" 로 설치돼 있다 → All re
 `BOT_PAT` 을 쓰면 실행 주체가 사람 계정이라 이 증상은 생기지 않는다.
 
 **품질 리뷰(🧹)가 안 붙음** — CI 가 실패했거나(그땐 auto-fix 가 돈다), draft, `no-refine` 라벨, `CLAUDE_REFINE=false`,
-또는 HEAD 가 이미 `[claude-refine]` 커밋이다(push 당 1회).
+문서만 바뀐 PR, 이 PR 에서 이미 한 번 돌았거나(PR 당 1회 — 다시 돌리려면 🧹 코멘트를 지우고 push),
+HEAD 가 이미 `[claude-refine]` 커밋이다.
+
+**프리뷰가 안 뜸** — draft PR 이거나 문서만 바뀐 PR 이다(설계상 건너뜀). ready for review 로 바꾸면 다시 돈다.
 🧹 코멘트에 "`ci.yml` 을 바꿔서 건너뜁니다" 가 있으면 그 PR 이 `ci.yml` 을 고쳤다 — merge 후 다음 PR 부터 돈다.
 
 **`[claude-refine]` 커밋 뒤 세션에서 push 가 거절됨** — 브랜치에 CI 가 커밋을 더했다. `git pull origin <브랜치>` 후 다시 push.
