@@ -30,6 +30,9 @@ Claude GitHub App 이 "Only select repositories" 로 설치돼 있다 → All re
 `claude[bot]` 이 시작한 실행이다. ci.yml(refine·autofix)의 `allowed_bots: claude` 를 확인한다([DESIGN.md 4번](DESIGN.md#4-auto-fix)).
 `BOT_PAT` 을 쓰면 실행 주체가 사람 계정이라 이 증상은 생기지 않는다.
 
+**Claude PR 리뷰가 안 붙음** — draft 이거나(ready for review 로 바꾸면 돈다), `CLAUDE_REVIEW=false`, 또는 그 PR 이
+`claude-review.yml` 을 바꿨다("🤖 Claude PR 리뷰 건너뜀" 코멘트가 붙는다 — merge 후 다음 PR 부터 돈다. 지금 필요하면 `@claude 리뷰해줘`).
+
 **품질 리뷰(🧹)가 안 붙음** — CI 가 실패했거나(그땐 auto-fix 가 돈다), draft, `no-refine` 라벨, `CLAUDE_REFINE=false`,
 문서만 바뀐 PR, 이 PR 에서 이미 한 번 돌았거나(PR 당 1회 — 다시 돌리려면 🧹 코멘트를 지우고 push),
 HEAD 가 이미 `[claude-refine]` 커밋이다.
