@@ -70,7 +70,7 @@ PR 생성/push ─► ci.yml
 PR 코멘트 @claude ─► claude-mention.yml  지시대로 수정
 merge ─► ci.yml 의 test (merge 결과물을 한 번 더, 항상 전체 — 브랜치 보호가 "최신 main 포함" 을 요구하지 않아서)
       ─► 통과하면 deploy.yml  프로덕션 마이그레이션 → Vercel 프로덕션 배포 → /api/health 확인 → PR 코멘트
-                              (문서만 바뀐 merge 는 배포하지 않음. test 가 실패하면 배포하지 않음)
+                              (문서만 바뀐 merge 는 배포하지 않음. test 가 실패하면 배포하지 않고 merge 된 PR 에 알림)
 PR 닫힘 ─► preview-cleanup.yml  Neon 프리뷰 브랜치 삭제
 ```
 
