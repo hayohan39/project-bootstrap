@@ -64,11 +64,13 @@ PR 이 이미 열려 있는 브랜치에서 추가 요청을 받으면 같은 �
 PR 생성/push ─► ci.yml
                  ├ test     lint · typecheck · test · 빈 Postgres 에 마이그레이션 · build
                  ├ preview  Neon 브랜치(프로덕션 복제)에 마이그레이션 → Vercel 프리뷰 → PR 코멘트
-                 ├ refine   위가 통과하면 Claude 품질 리뷰 → 작은 정리는 [claude-refine] 커밋, 큰 것은 제안 (PR 당 1회)
+                 ├ refine   위가 통과하면 Claude 품질 리뷰 → 작은 정리는 [claude-refine] 커밋, 큰 것은 제안 (PR 당 1회 — `quality-reviewed` 라벨)
                  └ autofix  위가 실패하면 Claude 가 고쳐서 [claude-autofix] 커밋 (PR 당 최대 3회)
              ─► claude-review.yml   PR 이 열릴 때 자동 리뷰 코멘트
 PR 코멘트 @claude ─► claude-mention.yml  지시대로 수정
-merge ─► deploy.yml  프로덕션 마이그레이션 → Vercel 프로덕션 배포 → /api/health 확인 → PR 코멘트
+merge ─► ci.yml 의 test (merge 결과물을 한 번 더, 항상 전체 — 브랜치 보호가 "최신 main 포함" 을 요구하지 않아서)
+      ─► 통과하면 deploy.yml  프로덕션 마이그레이션 → Vercel 프로덕션 배포 → /api/health 확인 → PR 코멘트
+                              (문서만 바뀐 merge 는 배포하지 않음. test 가 실패하면 배포하지 않고 merge 된 PR 에 알림)
 PR 닫힘 ─► preview-cleanup.yml  Neon 프리뷰 브랜치 삭제
 ```
 

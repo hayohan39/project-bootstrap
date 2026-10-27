@@ -74,7 +74,7 @@ project-scoped 라 흔히 밟는다. `provision.mjs` 가 이 경우를 구분해
 - Vercel 프로젝트를 **Git 에 연결하지 않는다.** 연결하면 merge 순간 Vercel 이 바로 배포해
   마이그레이션보다 앞설 수 있고, deploy.yml 과 합쳐 같은 커밋이 두 번 배포된다.
   `vercel.json` 의 `git.deploymentEnabled: false` 는 누가 나중에 연결해도 막는 안전장치.
-- deploy.yml: 마이그레이션 실패 → 배포 안 함. 마이그레이션이 "건너뜀"(DB 미설정)이면 배포는 한다.
+- deploy.yml: main 의 CI(test) 실패 → 배포 안 함. 마이그레이션 실패 → 배포 안 함. 마이그레이션이 "건너뜀"(DB 미설정)이면 배포는 한다.
 - **필요한 값이 없으면 실패가 아니라 건너뜀.** 프로비저닝 전에 merge 했다는 이유로 main 이
   빨간불이 되면 안 된다. 무엇이 없는지는 실행 요약에 남긴다.
 - 새 Vercel 프로젝트는 `framework` 를 명시해서 만든다. 비워 두면 첫 배포에서
@@ -104,9 +104,10 @@ CI 가 통과하면 Claude 가 `.github/review/quality.md` 기준(덧붙임·재
 
 - **동작이 바뀌지 않는 국소적 정리만** 자동 반영한다(`npm run check` 통과 필수, 실패하면 되돌리고 제안으로).
   여러 파일·공개 인터페이스·테스트 추가는 제안 코멘트로만 남기고 사람이 `@claude` 로 지시한다.
-- PR 당 한 번: 🧹 코멘트에 완료 표시(`<!-- quality-review:done -->`)가 있으면 건너뛴다. 품질 리뷰는 push 마다 CI 를 한 번 더
+- PR 당 한 번: 시작할 때 PR 에 `quality-reviewed` 라벨을 붙이고, 라벨이 있으면 job 자체가 건너뛴다(러너도 뜨지 않아 0분).
+  리뷰가 결과를 남기지 못하면 라벨을 떼어 다음 push 에 다시 돈다. 품질 리뷰는 push 마다 CI 를 한 번 더
   돌게 하므로(정리 커밋 → CI 재실행) Actions 사용 시간이 두 배가 된다. 작성자 push 마다 돌리려면 `REFINE_EVERY_PUSH=true`,
-  한 PR 만 다시 돌리려면 그 🧹 코멘트를 지운다.
+  한 PR 만 다시 돌리려면 라벨을 떼고 push 한다.
 - 반복 방지: HEAD 가 이미 `[claude-refine]` 커밋이면 건너뛴다(`REFINE_MAX_ROUNDS`, 기본 1).
   작성자가 push 할 때마다 한 번. 같은 모델이 취향을 서로 고치며 도는 것을 막는다.
 - 지적에는 "왜 더 나은지" 한 문장을 요구해 취향 지적을 줄인다.
@@ -134,12 +135,16 @@ CI 가 통과하면 Claude 가 `.github/review/quality.md` 기준(덧붙임·재
 
 - **모든 job 에 `timeout-minutes`.** 기본값 360분이면 멈춘 job 하나가 한도를 크게 깎는다. Claude 단계는 step 에도
   더 짧은 상한을 둬서, 멈춰도 뒤의 리포트·검사 step 은 돈다.
-- **문서만 바뀐 PR**(`scripts/ci-scope.mjs`): `test` job 은 돌되 설치·빌드·테스트를 건너뛰고, preview·refine 도 건너뛴다.
+- **문서만 바뀐 PR·merge**(`scripts/ci-changes.mjs` — 세 템플릿 공통): `test` job 은 돌되 설치·빌드·테스트를 건너뛰고,
+  preview·refine 도 건너뛴다. deploy 는 **마지막 성공 배포** 이후가 문서뿐일 때 배포하지 않는다(앞선 배포가 실패했으면 그 코드까지 배포).
   `paths-ignore` 를 쓰지 않는 이유: 체크(`test`)가 아예 안 생겨 보호 규칙을 건 리포에서 merge 가 막힌다.
   판정이 불확실하면 전체를 돈다. 템플릿 리포지토리는 템플릿 테스트가 문서도 보므로 항상 전체를 돈다.
 - **draft PR 은 프리뷰를 건너뛴다.** ready for review 로 바꾸면 CI 가 다시 돈다.
 - **품질 리뷰는 PR 당 한 번**(4-1). auto-fix 는 PR 당 3회(`AUTOFIX_MAX_ATTEMPTS`).
 - Next.js 빌드 캐시(`.next/cache`)를 `actions/cache` 로 남긴다. main push 의 CI 가 PR 들의 출발점 캐시를 만든다.
+- **main push 의 test 는 일부러 쓰는 시간이다.** 브랜치 보호가 "최신 main 포함"(strict)을 요구하지 않아 merge 결과물은
+  PR 에서 검사되지 않았다. 앞선 merge 의 CI 가 취소됐을 수 있어 문서만 바뀐 merge 도 전체를 돈다. deploy.yml 은 그 test 가 통과한 뒤 `workflow_run` 으로 시작한다. `workflow_run` 실행의 `head_sha` 는
+  그 순간의 main 이라 배포한 커밋과 다를 수 있어, `run-name` 에 배포 커밋을 넣고 "마지막 성공 배포" 는 그 이름에서 읽는다.
 
 ## 6. 비공개 무료 리포의 한계
 

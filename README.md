@@ -57,7 +57,7 @@ Actions → New project → Run workflow (`name`, `description`).
 .github/workflows/
   ci.yml               test → preview → refine(품질 리뷰·정리) / autofix(실패 시)
   preview-cleanup.yml  PR 닫히면 Neon 프리뷰 브랜치 삭제
-  deploy.yml           main → 마이그레이션 → Vercel 배포 → 헬스체크
+  deploy.yml           main 의 CI 통과 → 마이그레이션 → Vercel 배포 → 헬스체크 (문서만이면 건너뜀)
   claude-review.yml    PR 자동 리뷰
   claude-mention.yml   @claude 코멘트 처리
   new-project.yml      [템플릿 전용] 새 프로젝트 생성
