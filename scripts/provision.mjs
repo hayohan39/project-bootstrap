@@ -10,7 +10,7 @@
 //   NEON_ORG_ID     (선택) Neon 조직이 여러 개일 때
 //   VERCEL_TEAM_ID  (선택) Vercel 팀 계정일 때
 //
-// 다시 실행해도 안전하다(같은 이름의 프로젝트가 있으면 재사용한다).
+// 다시 실행해도 안전하다(같은 이름의 프로젝트가 있으면 재사용한다). 쓰지 않는 기본 라벨도 지운다.
 import { execFileSync } from 'node:child_process';
 import process from 'node:process';
 import { connectionUris, neon, waitForOperations } from './neon.mjs';
@@ -35,6 +35,22 @@ const setVariable = (repo, key, value) => {
   gh(['variable', 'set', key, '-R', repo, '--body', value]);
   console.log(`  variable ${key}=${value}`);
 };
+
+// 파이프라인이 쓰지 않는 라벨(GitHub 기본 라벨, Dependabot 이 만든 것, 예전 CI 품질 리뷰의 것)을 지운다.
+const UNUSED_LABELS = [
+  'bug', 'documentation', 'duplicate', 'enhancement', 'good first issue', 'help wanted', 'invalid', 'question',
+  'wontfix', 'accessibility', 'dependencies', 'javascript', 'github_actions', 'no-refine', 'quality-reviewed',
+];
+function removeUnusedLabels(repo) {
+  for (const name of UNUSED_LABELS) {
+    try {
+      execFileSync('gh', ['label', 'delete', name, '-R', repo, '--yes'], { stdio: 'ignore' });
+      console.log(`  라벨 ${name} 삭제`);
+    } catch {
+      // 없는 라벨
+    }
+  }
+}
 
 async function vercel(path, { method = 'GET', body } = {}) {
   const token = process.env.VERCEL_TOKEN;
@@ -148,6 +164,7 @@ try {
   // 앱 런타임은 pooled 연결. 마이그레이션 도구를 앱 안에서 돌릴 일이 생기면 UNPOOLED 를 쓴다.
   await setVercelEnv(app.projectId, 'DATABASE_URL', db.pooled);
   await setVercelEnv(app.projectId, 'DATABASE_URL_UNPOOLED', db.direct);
+  removeUnusedLabels(repo);
 
   console.log('\n✅ 프로비저닝 완료');
 } catch (error) {
