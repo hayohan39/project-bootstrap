@@ -36,14 +36,28 @@ const setVariable = (repo, key, value) => {
   console.log(`  variable ${key}=${value}`);
 };
 
-// 파이프라인이 쓰지 않는 라벨(GitHub 기본 라벨, Dependabot 이 만든 것, 예전 CI 품질 리뷰의 것)을 지운다.
-const UNUSED_LABELS = [
+// 파이프라인이 쓰지 않는 라벨(GitHub 기본 라벨 — 이슈·PR 에 쓰이면 남김, Dependabot 이 만든 것, 예전 CI 품질 리뷰의 것)을 지운다.
+const DEFAULT_LABELS = [
   'bug', 'documentation', 'duplicate', 'enhancement', 'good first issue', 'help wanted', 'invalid', 'question',
-  'wontfix', 'accessibility', 'dependencies', 'javascript', 'github_actions', 'no-refine', 'quality-reviewed',
+  'wontfix', 'accessibility',
 ];
+const OBSOLETE_LABELS = [
+  'dependencies', 'javascript', 'github_actions', 'no-refine', 'quality-reviewed',
+];
+
+function labelInUse(repo, name) {
+  const url = `repos/${repo}/issues?labels=${encodeURIComponent(name)}&state=all&per_page=1`;
+  return JSON.parse(execFileSync('gh', ['api', url], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })).length > 0;
+}
+
 function removeUnusedLabels(repo) {
-  for (const name of UNUSED_LABELS) {
+  for (const name of [...DEFAULT_LABELS, ...OBSOLETE_LABELS]) {
     try {
+      // 기본 라벨은 이미 이슈·PR 에 붙여 쓰고 있으면 사용자의 것이라 남긴다.
+      if (DEFAULT_LABELS.includes(name) && labelInUse(repo, name)) {
+        console.log(`  라벨 ${name} 은 이슈·PR 에 쓰이고 있어 남김`);
+        continue;
+      }
       execFileSync('gh', ['label', 'delete', name, '-R', repo, '--yes'], { stdio: 'ignore' });
       console.log(`  라벨 ${name} 삭제`);
     } catch {
