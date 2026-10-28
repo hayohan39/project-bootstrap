@@ -26,25 +26,10 @@ Claude GitHub App 이 "Only select repositories" 로 설치돼 있다 → All re
 `GITHUB_TOKEN` 으로 push 한 커밋은 워크플로를 트리거하지 않는다. Claude GitHub App 을
 설치하거나 `BOT_PAT` 을 넣는다.
 
-**Claude 커밋 뒤 품질 리뷰가 "결과를 남기지 못했습니다"** — 로그에 `Workflow initiated by non-human actor`.
-`claude[bot]` 이 시작한 실행이다. ci.yml(refine·autofix)의 `allowed_bots: claude` 를 확인한다([DESIGN.md 4번](DESIGN.md#4-auto-fix)).
-`BOT_PAT` 을 쓰면 실행 주체가 사람 계정이라 이 증상은 생기지 않는다.
-
 **Claude PR 리뷰가 안 붙음** — draft 이거나(ready for review 로 바꾸면 돈다), `CLAUDE_REVIEW=false`, 또는 그 PR 이
 `claude-review.yml` 을 바꿨다("🤖 Claude PR 리뷰 건너뜀" 코멘트가 붙는다 — merge 후 다음 PR 부터 돈다. 지금 필요하면 `@claude 리뷰해줘`).
 
-**품질 리뷰(🧹)가 안 붙음** — CI 가 실패했거나(그땐 auto-fix 가 돈다), draft, `no-refine` 라벨, `CLAUDE_REFINE=false`,
-문서만 바뀐 PR, 이 PR 에서 이미 한 번 돌았거나(PR 당 1회 — 다시 돌리려면 🧹 코멘트를 지우고 push),
-HEAD 가 이미 `[claude-refine]` 커밋이다.
-
 **프리뷰가 안 뜸** — draft PR 이거나 문서만 바뀐 PR 이다(설계상 건너뜀). ready for review 로 바꾸면 다시 돈다.
-🧹 코멘트에 "`ci.yml` 을 바꿔서 건너뜁니다" 가 있으면 그 PR 이 `ci.yml` 을 고쳤다 — merge 후 다음 PR 부터 돈다.
-
-**`[claude-refine]` 커밋 뒤 세션에서 push 가 거절됨** — 브랜치에 CI 가 커밋을 더했다. `git pull origin <브랜치>` 후 다시 push.
-
-**🧹 코멘트에 "보호된 경로를 바꿨습니다" 경고** — 품질 리뷰 커밋이 막힌 경로를 건드렸다. 그 커밋을 revert.
-
-**품질 리뷰가 원치 않는 정리를 했다** — 그 커밋을 revert 하고 PR 에 `no-refine` 라벨. 기준을 바꾸려면 `.github/review/quality.md`.
 
 **auto-fix 가 같은 걸 반복**
 3회에서 멈춘다. 반복된다면 원인이 코드가 아니라 설정(시크릿, 한도)일 가능성이 크다.
