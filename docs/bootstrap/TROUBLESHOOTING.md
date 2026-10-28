@@ -26,8 +26,9 @@ Claude GitHub App 이 "Only select repositories" 로 설치돼 있다 → All re
 `GITHUB_TOKEN` 으로 push 한 커밋은 워크플로를 트리거하지 않는다. Claude GitHub App 을
 설치하거나 `BOT_PAT` 을 넣는다.
 
-**Claude PR 리뷰가 안 붙음** — draft 이거나(ready for review 로 바꾸면 돈다), `CLAUDE_REVIEW=false`, 또는 그 PR 이
-`claude-review.yml` 을 바꿨다("🤖 Claude PR 리뷰 건너뜀" 코멘트가 붙는다 — merge 후 다음 PR 부터 돈다. 지금 필요하면 `@claude 리뷰해줘`).
+**Claude PR 리뷰가 안 붙음** — CI 가 실패했거나(통과한 뒤에 돈다), draft 이거나(ready for review 로 바꾸면 돈다),
+`CLAUDE_REVIEW=false`, 또는 이미 통과한 PR 이다(`ai-reviewed` 라벨 — PR 당 1회. 다시 보려면 라벨을 떼고 push).
+Actions → Claude PR Review 실행 로그에 건너뛴 이유가 있다. 지금 바로 필요하면 `@claude 리뷰해줘`.
 
 **프리뷰가 안 뜸** — draft PR 이거나 문서만 바뀐 PR 이다(설계상 건너뜀). ready for review 로 바꾸면 다시 돈다.
 

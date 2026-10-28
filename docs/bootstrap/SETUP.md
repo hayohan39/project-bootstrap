@@ -44,7 +44,8 @@ https://github.com/apps/claude → Configure → Repository access → **All rep
 | 이름 | 기본값 | 의미 |
 | --- | --- | --- |
 | `AUTOFIX_MAX_ATTEMPTS` | `3` | PR 당 auto-fix 최대 시도 |
-| `CLAUDE_REVIEW` | (켜짐) | `false` 면 PR 자동 리뷰 끔 |
+| `CLAUDE_REVIEW` | (켜짐) | `false` 면 CI 뒤 Claude 리뷰 끔 |
+| `CLAUDE_REVIEW_EVERY_PUSH` | (꺼짐) | `true` 면 Claude 리뷰를 push 마다. 기본은 PR 당 1회(`ai-reviewed` 라벨) |
 
 ## 5. 확인
 
