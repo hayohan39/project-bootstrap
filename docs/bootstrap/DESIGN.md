@@ -102,7 +102,18 @@ project-scoped 라 흔히 밟는다. `provision.mjs` 가 이 경우를 구분해
 CI 에는 품질 리뷰가 없다(2026-10 에 `refine` job 을 없앴다). 리뷰 job(3~5분)에 더해 정리 커밋이 CI 를 한 번 더 돌려
 PR 마다 Actions 시간이 거의 두 배가 됐고, 같은 기준(`.github/review/quality.md`)을 작성자 세션이 push 전에 이미 쓰고 있었다.
 그래서 CLAUDE.md 4단계에서 세션이 이 기준으로 diff 를 다듬고 결과를 PR 본문 "어떻게 확인했나" 에 한 줄로 남긴다.
-버그·보안·마이그레이션은 PR 이 열릴 때 `claude-review.yml` 이 따로 본다.
+버그·보안·마이그레이션은 CI 뒤의 `claude-review.yml` 이 따로 본다.
+
+## 4-2. Claude 리뷰는 CI 뒤에 PR 당 1회
+
+`claude-review.yml` 은 CI 가 끝나면(`workflow_run`) CI 가 통과했을 때만 돈다. production-bootstrap 의 PR 리뷰와 같은 모양이다.
+
+- CI 가 실패한 코드는 auto-fix 로 바뀔 것이라 리뷰하지 않는다(Actions 시간 절약). auto-fix·`@claude` 커밋도 CI 를 다시 거쳐 리뷰를 받는다.
+- `workflow_run` 은 main 의 이 파일로 돈다. PR 의 코드는 `./pr` 작업 트리로 읽기만 하므로 PR 이 리뷰 방식을 바꿀 수 없다
+  (그래서 "이 PR 은 claude-review.yml 을 바꿔서 건너뜀" 같은 예외도 없다).
+- PR 당 1회: "✅ merge 해도 됨" 이면 `ai-reviewed` 라벨을 붙이고 그 뒤 push 는 job 이 바로 끝난다. "✋ 수정 필요" 면 라벨을 붙이지 않아
+  고친 다음 push 에서 다시 본다. 다시 보려면 라벨을 떼고 push, 매 push 리뷰는 변수 `CLAUDE_REVIEW_EVERY_PUSH=true`.
+- 통과 뒤의 커밋은 리뷰하지 않는다 — 비용과 맞바꾼 절충이다. 큰 변경을 더했으면 라벨을 떼고 push 한다.
 
 ## 5. CI 는 ubuntu 만
 

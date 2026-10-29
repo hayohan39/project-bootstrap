@@ -12,8 +12,10 @@
           ▼
    CI (자동) ─ lint · typecheck · test · 빈 DB 마이그레이션 · build
           │   └ 실패 → Claude auto-fix → 다시 CI (PR 당 최대 3회)
-          ├ preview ─ Neon 브랜치(프로덕션 복제)에 마이그레이션 → Vercel 프리뷰 → PR 코멘트
-          └ Claude 자동 리뷰 코멘트
+          └ preview ─ Neon 브랜치(프로덕션 복제)에 마이그레이션 → Vercel 프리뷰 → PR 코멘트
+          │
+          ▼
+   CI 통과 → Claude 리뷰 코멘트 (PR 당 1회)
           │
           ▼
 나 ── GitHub 에서 PR 리뷰 → merge   (수정 요청은 @claude 코멘트)
@@ -57,7 +59,7 @@ Actions → New project → Run workflow (`name`, `description`).
   ci.yml               test → preview → autofix(실패 시)
   preview-cleanup.yml  PR 닫히면 Neon 프리뷰 브랜치 삭제
   deploy.yml           main 의 CI 통과 → 마이그레이션 → Vercel 배포 → 헬스체크 (문서만이면 건너뜀)
-  claude-review.yml    PR 자동 리뷰
+  claude-review.yml    CI 통과 뒤 Claude 리뷰 (PR 당 1회)
   claude-mention.yml   @claude 코멘트 처리
   new-project.yml      [템플릿 전용] 새 프로젝트 생성
 .claude/

@@ -38,9 +38,9 @@
    `node scripts/gh.mjs pr-create --title "feat: ..." --body-file /tmp/pr.md`
    "무엇을 / 어떻게 확인했나 / 배포 영향" 을 비우지 않는다. 사용자는 휴대폰으로 PR 을
    볼 수 있다 — 무엇이 바뀌는지 첫 줄에서 알 수 있게 쓴다.
-7. PR 을 연 뒤 `node scripts/gh.mjs pr-watch` 로 CI 를 기다리고 결과(체크, 프리뷰 링크)를
-   사용자에게 한두 줄로 알린다. 실패하면 auto-fix 가 붙지만, 세션이 살아 있으면 직접 고쳐서
-   push 하는 편이 빠르다.
+7. PR 을 연 뒤 `node scripts/gh.mjs pr-watch` 로 CI 와 그 뒤의 Claude 리뷰를 기다리고 결과(체크, 프리뷰 링크, 리뷰 판정)를
+   사용자에게 한두 줄로 알린다. CI 가 실패하면 auto-fix 가 붙지만, 세션이 살아 있으면 직접 고쳐서
+   push 하는 편이 빠르다. 리뷰가 "수정 필요" 면 같은 브랜치에서 고쳐 push 한다.
 8. **merge 하지 않는다.** 사용자가 요청해도 "PR 에서 merge 버튼을 눌러 주세요" 라고 안내한다.
    (merge 가 곧 프로덕션 배포이므로 사람이 누르는 것이 이 프로세스의 게이트다.)
 
@@ -64,7 +64,8 @@ PR 생성/push ─► ci.yml
                  ├ test     lint · typecheck · test · 빈 Postgres 에 마이그레이션 · build
                  ├ preview  Neon 브랜치(프로덕션 복제)에 마이그레이션 → Vercel 프리뷰 → PR 코멘트
                  └ autofix  위가 실패하면 Claude 가 고쳐서 [claude-autofix] 커밋 (PR 당 최대 3회)
-             ─► claude-review.yml   PR 이 열릴 때 자동 리뷰 코멘트
+CI 완료 ─► claude-review.yml (main 의 코드로 실행)  CI 통과 시 Claude 리뷰 → PR 코멘트
+                 (PR 당 1회 — 통과하면 `ai-reviewed` 라벨. "수정 필요" 면 고친 다음 push 에서 다시 리뷰)
 PR 코멘트 @claude ─► claude-mention.yml  지시대로 수정
 merge ─► ci.yml 의 test (merge 결과물을 한 번 더, 항상 전체 — 브랜치 보호가 "최신 main 포함" 을 요구하지 않아서)
       ─► 통과하면 deploy.yml  프로덕션 마이그레이션 → Vercel 프로덕션 배포 → /api/health 확인 → PR 코멘트
@@ -125,6 +126,7 @@ Vercel(배포)과 Neon(DB)은 고정이다. 그 밖의 것(인증, 파일 저장
 - 경로는 `path.join`, 임시 디렉터리는 `os.tmpdir()`. npm scripts 에 POSIX 전용 문법 금지.
 - 테스트를 지우거나 skip 해서 통과시키지 않는다. `eslint-disable` / `@ts-ignore` 로 덮지 않는다.
 - 사용자에게 보이는 문구는 한국어가 기본.
+- `ai-reviewed` 라벨은 건드리지 않는다(붙어 있으면 리뷰를 건너뛴다).
 - 개인용 앱이라도 쓰기 API 는 인증 없이 공개하지 않는다. 인증 방식이 아직 없으면 먼저 묻는다.
 
 ## 명령
